@@ -105,7 +105,7 @@
 
             $.ajax({
                 type: "GET",
-                url: `/web-scrap/analysist/solution/${reason}`,
+                url: `/web-scrap/analysis/solution/${reason}`,
                 dataType: "JSON",
                 success: function(response) {
                     // console.log(response);

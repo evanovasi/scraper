@@ -119,7 +119,7 @@
                                                         <a class="dropdown-item" target="_blank"
                                                             href="{{ $datascraping->url }}">Link</a>
                                                         <a class="dropdown-item"
-                                                            href="{{ route('web-scrap.analysist', $datascraping->id) }}">Analysist</a>
+                                                            href="{{ route('web-scrap.analysis', $datascraping->id) }}">Analysis</a>
                                                         <a class="dropdown-item"
                                                             href="{{ route('web-scrap.show', $datascraping->id) }}">Detail</a>
                                                         <a class="dropdown-item"

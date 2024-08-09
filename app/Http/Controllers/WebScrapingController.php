@@ -168,7 +168,7 @@ class WebScrapingController extends Controller
         ]);
     }
 
-    public function analysist(string $id)
+    public function analysis(string $id)
     {
         $sentimen = Storage::json('public/sentimen/sentimen.json');
         // Filter data berdasarkan id
@@ -189,8 +189,8 @@ class WebScrapingController extends Controller
         //     'path' => LengthAwarePaginator::resolveCurrentPath(),
         //     'pageName' => 'page',
         // ]);
-        return view('web-scraping.analysist', [
-            'title' => 'Analysist',
+        return view('web-scraping.analysis', [
+            'title' => 'Analysis',
             'sentiments' => $filteredData
         ]);
     }
