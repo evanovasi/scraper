@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\SocialMediaScrapingController;
-use App\Http\Controllers\WebScrapingController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AnalysisController;
+use App\Http\Controllers\WebScrapingController;
+use App\Http\Controllers\SocialMediaScrapingController;
 
 Route::get('/', function () {
     return to_route('web-scrap.index');
@@ -14,10 +15,13 @@ Route::controller(WebScrapingController::class)->group(function () {
     Route::get('/web-scrap/show/{id}',  'show')->name('web-scrap.show');
     Route::delete('/web-scrap/{id}',  'destroy')->name('web-scrap.destroy');
     Route::get('/web-scrap/json/{id?}',  'toJSON')->name('web-scrap.json');
-    Route::get('/web-scrap/analysis/{id}',  'analysis')->name('web-scrap.analysis');
-    Route::post('/web-scrap/analysis/sentiment',  'sentiment')->name('web-scrap.sentiment');
-    Route::get('/web-scrap/analysis/solution/{reason}',  'solution')->name('web-scrap.solution');
 });
+Route::controller(AnalysisController::class)->group(function () {
+    Route::get('/analysis/{id}',  'analysis')->name('web-scrap.analysis');
+    Route::post('/analysis/sentiment',  'sentiment')->name('web-scrap.sentiment');
+    Route::get('/analysis/solution/{reason}',  'solution')->name('web-scrap.solution');
+});
+
 // Route::controller(SocialMediaScrapingController::class)->group(function () {
 Route::get('/socmed-scrap', function () {
     abort(404);
