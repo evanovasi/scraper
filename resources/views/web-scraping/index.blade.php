@@ -58,103 +58,102 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">
-                                {{-- Data Scraping --}}
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h3 class="card-title m-0">
                                 <a href="{{ route('web-scrap.json') }}" class="btn btn-warning">
                                     <i class="fa fa-download"></i> JSON
                                 </a>
                             </h3>
-                            <div class="card-tools">
-                                <form action="{{ route('web-scrap.sentiment') }}" method="POST"
-                                    enctype="multipart/form-data">
-                                    @csrf
-                                    <div class="input-group mb-3">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">Upload Sentiment JSON</span>
-                                        </div>
-                                        <input type="file" class="form-control" name="sentimen"
-                                            accept="application/json">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-info" type="submit">Upload</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- /.card-header -->
-                    <div class="card-body table-responsive p-0">
-                        <table class="table table-hover text-nowrap">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Date</th>
-                                    <th>Title</th>
-                                    <th>Content</th>
-                                    <th>Hashtags</th>
-                                    <th>URL</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if ($datascrapings->count())
-                                    @foreach ($datascrapings as $datascraping)
-                                        <tr>
-                                            <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $datascraping->date }}</td>
-                                            <td>{{ Str::words($datascraping->title, 5, ' ...') }}</td>
-                                            <td>{{ Str::words($datascraping->content, 4, ' ...') }}</td>
-                                            <td>{{ Str::words($datascraping->hashtags, 3, ' ...') }}</td>
-                                            <td>{{ Str::limit($datascraping->url, 25, ' ...') }}</td>
-                                            <td>
-                                                <div class="btn-group">
-                                                    <button type="button"
-                                                        class="btn btn-success btn-sm dropdown-toggle dropdown-hover dropdown-icon"
-                                                        data-toggle="dropdown" data-boundary="window">
-                                                        <span class="sr-only">Toggle Dropdown</span>
-                                                    </button>
-                                                    <div class="dropdown-menu" role="menu">
-                                                        <a class="dropdown-item" target="_blank"
-                                                            href="{{ $datascraping->url }}">Link</a>
-                                                        <a class="dropdown-item"
-                                                            href="{{ route('web-scrap.analysis', $datascraping->id) }}">Analysis</a>
-                                                        <a class="dropdown-item"
-                                                            href="{{ route('web-scrap.show', $datascraping->id) }}">Detail</a>
-                                                        <a class="dropdown-item"
-                                                            href="{{ route('web-scrap.json', $datascraping->id) }}">JSON</a>
-                                                        <form method="POST"
-                                                            action="{{ route('web-scrap.destroy', $datascraping->id) }}">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="dropdown-item">Delete</button>
-                                                        </form>
+                            <!-- Container untuk tags -->
+                            <!-- Container untuk tags -->
+                            <div class="tags-container position-absolute w-50 d-flex justify-content-center align-items-center"
+                                style="left: 50%; transform: translateX(-50%); overflow-x: auto; white-space: nowrap;">
+                                @foreach ($tagsWithColors as $tagWithColor)
+                                    <span class="badge {{ $tagWithColor['color'] }} mr-2">{{ $tagWithColor['tag'] }}</span>
+                                @endforeach
+                            </div>
+
+                            <form action="" class="m-0 ml-auto">
+                                <div class="input-group">
+                                    <input class="form-control" type="text" placeholder="Search" name="search" />
+                                    <div class="input-group-append">
+                                        <button class="btn btn-info" type="submit"><i class="fas fa-search"></i></button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Title</th>
+                                        <th>Content</th>
+                                        <th>Hashtags</th>
+                                        <th>URL</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if ($datascrapings->count())
+                                        @foreach ($datascrapings as $datascraping)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td>{{ $datascraping->date }}</td>
+                                                <td>{{ Str::words($datascraping->title, 5, ' ...') }}</td>
+                                                <td>{{ Str::words($datascraping->content, 4, ' ...') }}</td>
+                                                <td>{{ Str::words($datascraping->hashtags, 3, ' ...') }}</td>
+                                                <td>{{ Str::limit($datascraping->url, 25, ' ...') }}</td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <button type="button"
+                                                            class="btn btn-success btn-sm dropdown-toggle dropdown-hover dropdown-icon"
+                                                            data-toggle="dropdown" data-boundary="window">
+                                                            <span class="sr-only">Toggle Dropdown</span>
+                                                        </button>
+                                                        <div class="dropdown-menu" role="menu">
+                                                            <a class="dropdown-item" target="_blank"
+                                                                href="{{ $datascraping->url }}">Link</a>
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('web-scrap.analysis', $datascraping->id) }}">Analysis</a>
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('web-scrap.show', $datascraping->id) }}">Detail</a>
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('web-scrap.json', $datascraping->id) }}">JSON</a>
+                                                            <form method="POST"
+                                                                action="{{ route('web-scrap.destroy', $datascraping->id) }}">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="dropdown-item">Delete</button>
+                                                            </form>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @else
+                                        <tr>
+                                            <td class="align-middle text-center" colspan="6">
+                                                Data tidak ditemukan!
                                             </td>
                                         </tr>
-                                    @endforeach
-                                @else
-                                    <tr>
-                                        <td class="align-middle text-center" colspan="6">
-                                            Data tidak ditemukan!
-                                        </td>
-                                    </tr>
-                                @endif
-                            </tbody>
-                        </table>
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer clearfix">
+                            <ul class="pagination pagination-sm m-0 float-right">
+                                {{ $datascrapings->links('pagination::bootstrap-4') }}
+                            </ul>
+                        </div>
+                        <!-- /.card-body -->
                     </div>
-                    <div class="card-footer clearfix">
-                        <ul class="pagination pagination-sm m-0 float-right">
-                            {{ $datascrapings->links('pagination::bootstrap-4') }}
-                        </ul>
-                    </div>
-                    <!-- /.card-body -->
+                    <!-- /.card -->
                 </div>
-                <!-- /.card -->
             </div>
-        </div>
         </div>
     </section>
     <!-- /.content -->

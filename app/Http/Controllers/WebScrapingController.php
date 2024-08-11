@@ -16,16 +16,36 @@ class WebScrapingController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $searchKey = $request->query('search');
+        $scrapings = Scraping::latest()->search($searchKey)->where('type', 'web')->paginate(10)->withQueryString();
+        // Menggabungkan semua tags dari setiap record
+        $allTags = [];
+        foreach ($scrapings as $scraping) {
+            $tags = explode(',', $scraping->hashtags);
+            $allTags = array_merge($allTags, $tags);
+        }
+
+        // Menghilangkan duplikat dan menghilangkan spasi di setiap tag
+        $allTags = array_unique(array_map('trim', $allTags));
+
+        // Daftar kelas warna Bootstrap untuk badge
+        $badgeColors = ['badge-primary', 'badge-secondary', 'badge-success', 'badge-danger', 'badge-warning', 'badge-info', 'badge-light', 'badge-dark'];
+
+        // Menambahkan warna secara acak ke setiap tag
+        $tagsWithColors = [];
+        foreach ($allTags as $tag) {
+            $randomColor = $badgeColors[array_rand($badgeColors)];
+            $tagsWithColors[] = ['tag' => $tag, 'color' => $randomColor];
+        }
 
         return view('web-scraping.index', [
             'title' => 'Web News Scraper',
-            'datascrapings' => Scraping::latest()->where('type', 'web')->paginate(10)->withQueryString()
+            'datascrapings' => $scrapings,
+            'tagsWithColors' => $tagsWithColors,
         ]);
     }
-
-
 
     public function store(Request $request)
     {
