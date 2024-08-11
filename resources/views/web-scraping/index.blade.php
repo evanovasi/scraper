@@ -70,10 +70,12 @@
                             <div class="tags-container position-absolute w-50 d-flex justify-content-center align-items-center"
                                 style="left: 50%; transform: translateX(-50%); overflow-x: auto; white-space: nowrap;">
                                 @foreach ($tagsWithColors as $tagWithColor)
-                                    <span class="badge {{ $tagWithColor['color'] }} mr-2">{{ $tagWithColor['tag'] }}</span>
+                                    <a href="{{ route('web-scrap.index') }}?tags={{ $tagWithColor['tag'] }}">
+                                        <span
+                                            class="badge {{ $tagWithColor['color'] }} mr-2">{{ $tagWithColor['tag'] }}</span>
+                                    </a>
                                 @endforeach
                             </div>
-
                             <form action="" class="m-0 ml-auto">
                                 <div class="input-group">
                                     <input class="form-control" type="text" placeholder="Search" name="search" />

@@ -10,13 +10,22 @@ class Scraping extends Model
     use HasFactory;
     protected $hidden = ['type', 'created_at', 'updated_at'];
 
-    // Scope untuk pencarian
-    public function scopeSearch($query, $searchKey)
+
+
+    public function scopeFilter($query,  $request)
     {
-        return $query->where('date', 'LIKE', "%{$searchKey}%")
-            ->orWhere('title', 'LIKE', "%{$searchKey}%")
-            ->orWhere('content', 'LIKE', "%{$searchKey}%")
-            ->orWhere('hashtags', 'LIKE', "%{$searchKey}%")
-            ->orWhere('url', 'LIKE', "%{$searchKey}%");
+        // search
+        $query->when($request->query('search') ?? false, function ($query, $searchKey) {
+            return $query->where('date', 'LIKE', "%{$searchKey}%")
+                ->orWhere('title', 'LIKE', "%{$searchKey}%")
+                ->orWhere('content', 'LIKE', "%{$searchKey}%")
+                ->orWhere('hashtags', 'LIKE', "%{$searchKey}%")
+                ->orWhere('url', 'LIKE', "%{$searchKey}%");
+        });
+
+        // hastags
+        $query->when($request->query('tags') ?? false, function ($query, $tagsKey) {
+            return $query->where('hashtags', 'LIKE', "%{$tagsKey}%");
+        });
     }
 }

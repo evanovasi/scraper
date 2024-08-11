@@ -18,8 +18,7 @@ class WebScrapingController extends Controller
      */
     public function index(Request $request)
     {
-        $searchKey = $request->query('search');
-        $scrapings = Scraping::latest()->search($searchKey)->where('type', 'web')->paginate(10)->withQueryString();
+        $scrapings = Scraping::latest()->filter($request)->where('type', 'web')->paginate(10)->withQueryString();
         // Menggabungkan semua tags dari setiap record
         $allTags = [];
         foreach ($scrapings as $scraping) {
