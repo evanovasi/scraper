@@ -105,9 +105,10 @@
 
             $.ajax({
                 type: "GET",
-                url: `/web-scrap/analysis/solution/${reason}`,
+                url: `/analysis/solution/${reason}`,
                 dataType: "JSON",
                 success: function(response) {
+                    console.log(response);
                     // console.log(response);
                     populateTable(response);
                 },
