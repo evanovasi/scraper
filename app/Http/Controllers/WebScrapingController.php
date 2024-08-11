@@ -18,7 +18,7 @@ class WebScrapingController extends Controller
      */
     public function index(Request $request)
     {
-        $scrapings = Scraping::latest()->filter($request)->where('type', 'web')->paginate(10)->withQueryString();
+        $scrapings = Scraping::select('hashtags')->get();
         // Menggabungkan semua tags dari setiap record
         $allTags = [];
         foreach ($scrapings as $scraping) {
@@ -41,7 +41,7 @@ class WebScrapingController extends Controller
 
         return view('web-scraping.index', [
             'title' => 'Web News Scraper',
-            'datascrapings' => $scrapings,
+            'datascrapings' => Scraping::latest()->filter($request)->where('type', 'web')->paginate(10)->withQueryString(),
             'tagsWithColors' => $tagsWithColors,
         ]);
     }
