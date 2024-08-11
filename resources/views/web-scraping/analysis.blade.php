@@ -25,34 +25,36 @@
                                         <th scope="col">Tone</th>
                                         <th scope="col">Object</th>
                                         <th scope="col">Topics</th>
+                                        <th scope="col">Cluster</th>
                                         <th scope="col" class="text-center">RECOMMENDED SOLUTION</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @if ($sentiments)
-                                        @foreach ($sentiments as $sentiment)
-                                            @foreach ($sentiment['Aspect Sentiments'] as $sent)
-                                                <tr>
-                                                    <td scope="row">{{ $loop->iteration }}</td>
-                                                    <td>{{ $sent['subject'] }}</td>
-                                                    <td>{{ $sent['reason'] }}</td>
-                                                    <td>{{ $sent['sentiment'] }}</td>
-                                                    <td>{{ $sent['tone'] }}</td>
-                                                    <td>{{ $sent['object'] }}</td>
-                                                    <td>{{ implode(', ', $sentiment['Topics']) }}</td>
-                                                    <td align="center">
-                                                        <a class="btn btn-warning"
-                                                            href="{{ route('web-scrap.solution', ['reason' => $sent['reason']]) }}?json=download">
-                                                            <i class="fas fa-download"></i>
-                                                        </a>
-                                                        <button class="btn btn-primary"
-                                                            onclick="generateSolution('{{ $sent['reason'] }}')">
-                                                            <i class="fas fa-eye"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
+                                        {{-- @foreach ($sentiments as $sentiment) --}}
+                                        @foreach ($sentiments['Aspect Sentiments'] as $sent)
+                                            <tr>
+                                                <td scope="row">{{ $loop->iteration }}</td>
+                                                <td>{{ $sent['subject'] }}</td>
+                                                <td>{{ $sent['reason'] }}</td>
+                                                <td>{{ $sent['sentiment'] }}</td>
+                                                <td>{{ $sent['tone'] }}</td>
+                                                <td>{{ $sent['object'] }}</td>
+                                                <td>{{ implode(', ', $sentiments['Topics']) }}</td>
+                                                <td>{{ $sentiments['Event Info']['cluster'] }}</td>
+                                                <td align="center">
+                                                    <a class="btn btn-warning"
+                                                        href="{{ route('web-scrap.solution', ['reason' => $sent['reason']]) }}?json=download">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
+                                                    <button class="btn btn-primary"
+                                                        onclick="generateSolution('{{ $sent['reason'] }}')">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
                                         @endforeach
+                                        {{-- @endforeach --}}
                                     @else
                                         <tr>
                                             <td class="align-middle text-center" colspan="7">
