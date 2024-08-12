@@ -5,6 +5,21 @@
     @include('_partials.head')
 @show
 
+<style>
+    /* Spinner Wrapper Styling */
+    .spinner-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /* background-color: rgba(0, 0, 0, 0.5); */
+        /* Darkened background */
+        z-index: 9999;
+        /* Ensures it appears above all other content */
+    }
+</style>
+
 <body class="hold-transition sidebar-mini layout-navbar-fixed">
     <!-- Site wrapper -->
     <div class="wrapper">
@@ -18,7 +33,7 @@
             @include('_partials.sidebar')
         @show
         <!-- Content Wrapper. Contains page content -->
-        <div class="content-wrapper">
+        <div class="content-wrapper" id="content-body">
             <!-- Content Header (Page header) -->
             <section class="content-header">
                 <div class="container-fluid">
@@ -31,6 +46,9 @@
             </section>
             <!-- Main content -->
             @yield('content')
+
+
+
             <!-- /.content -->
         </div>
         <!-- /.content-wrapper -->
