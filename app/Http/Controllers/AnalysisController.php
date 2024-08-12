@@ -149,8 +149,8 @@ class AnalysisController extends Controller
                     {
                         "title": "Generated Recommendation Title",
                         "description": "Detailed explanation of the recommendation",
-                        "legal_reference": "Relevant legal references",
-                        "implementation_strategy": "Implementation strategy for the recommendation"
+                        "legal_reference": "Several comprehensive and Relevant current legal references",
+                        "implementation_strategy": "strategy implementation recommendations with detailed steps in concrete points of implementation from start to finish, mention the parties or stakeholders who are interrelated and need to work together in order to succeed. Provide real implementation examples for each of the concrete points."
                     }
                 ],
                 "presentation": "How this solution can be implemented broadly by society and government"
@@ -162,7 +162,7 @@ class AnalysisController extends Controller
         Objective: Create a comprehensive solution and recommendation for the social issue: $reason.
         Context: The solution recommendation should specifically address the area of Poverty and Economic Inequality, Health and Well-being, Education and Literacy, Violence and Security, or Environment and Social Life in accordance with the prevailing laws in Indonesia.
         Intent: Improve the quality and welfare of social life and enhance the performance of the government as a policymaker.
-        Instructions: Provide detailed, comprehensive recommendations with references to relevant regulations.
+        Instructions: Provide detailed and comprehensive recommendations with reference to relevant regulations in Indonesia. Provide several references to related and current laws and regulations.
         Presentation: The solution should be feasible for implementation by society at large and specifically by the government.
     EOT;
 

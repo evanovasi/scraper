@@ -117,19 +117,24 @@
                                                             <span class="sr-only">Toggle Dropdown</span>
                                                         </button>
                                                         <div class="dropdown-menu" role="menu">
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('web-scrap.show', $datascraping->id) }}"><i
+                                                                    class="fa fa-info-circle"></i> Detail </a>
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('web-scrap.analysis', $datascraping->id) }}"><i
+                                                                    class="fa fa-list"></i> Analysis </a>
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('web-scrap.json', $datascraping->id) }}"><i
+                                                                    class="fa fa-download"></i> JSON </a>
                                                             <a class="dropdown-item" target="_blank"
-                                                                href="{{ $datascraping->url }}">Link</a>
-                                                            <a class="dropdown-item"
-                                                                href="{{ route('web-scrap.analysis', $datascraping->id) }}">Analysis</a>
-                                                            <a class="dropdown-item"
-                                                                href="{{ route('web-scrap.show', $datascraping->id) }}">Detail</a>
-                                                            <a class="dropdown-item"
-                                                                href="{{ route('web-scrap.json', $datascraping->id) }}">JSON</a>
+                                                                href="{{ $datascraping->url }}"><i class="fa fa-link"></i>
+                                                                Link </a>
                                                             <form method="POST"
                                                                 action="{{ route('web-scrap.destroy', $datascraping->id) }}">
                                                                 @csrf
                                                                 @method('DELETE')
-                                                                <button type="submit" class="dropdown-item">Delete</button>
+                                                                <button type="submit" class="dropdown-item"><i
+                                                                        class="fa fa-trash"></i> Delete</button>
                                                             </form>
                                                         </div>
                                                     </div>
