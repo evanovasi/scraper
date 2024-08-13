@@ -16,7 +16,7 @@
                         <!-- /.card-header -->
                         <div class="card-body table-responsive p-0">
                             <table class="table table-bordered">
-                                <tbody id="issue">
+                                <tbody>
                                     <tr>
                                         <td><strong>Topics</strong></td>
                                         <td>{{ implode(', ', $sentiments['Topics']) }}</td>
