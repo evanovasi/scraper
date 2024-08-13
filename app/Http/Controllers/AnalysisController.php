@@ -77,7 +77,7 @@ class AnalysisController extends Controller
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'model' => 'gpt-4',
+                    'model' => 'gpt-4-turbo',
                     'messages' => [
                         ['role' => 'system', 'content' => $systemContent],
                         ['role' => 'user', 'content' => $userContent],
@@ -173,7 +173,7 @@ class AnalysisController extends Controller
                     'Content-Type' => 'application/json',
                 ],
                 'json' => [
-                    'model' => 'gpt-4',
+                    'model' => 'gpt-4-turbo',
                     'messages' => [
                         ['role' => 'system', 'content' => $systemContent],
                         ['role' => 'user', 'content' => $userContent],
