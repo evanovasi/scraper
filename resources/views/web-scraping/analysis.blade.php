@@ -16,6 +16,19 @@
                         <!-- /.card-header -->
                         <div class="card-body table-responsive p-0">
                             <table class="table table-bordered">
+                                <tbody id="issue">
+                                    <tr>
+                                        <td><strong>Topics</strong></td>
+                                        <td>{{ implode(', ', $sentiments['Topics']) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Cluster</strong></td>
+                                        <td>{{ $sentiments['Event Info']['cluster'] }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <table class="table table-bordered">
                                 <thead>
                                     <tr>
                                         <th scope="col">#</th>
@@ -24,8 +37,6 @@
                                         <th scope="col">Sentiment</th>
                                         <th scope="col">Tone</th>
                                         <th scope="col">Object</th>
-                                        <th scope="col">Topics</th>
-                                        <th scope="col">Cluster</th>
                                         <th scope="col" class="text-center">RECOMMENDED SOLUTION</th>
                                     </tr>
                                 </thead>
@@ -40,8 +51,7 @@
                                                 <td>{{ $sent['sentiment'] }}</td>
                                                 <td>{{ $sent['tone'] }}</td>
                                                 <td>{{ $sent['object'] }}</td>
-                                                <td>{{ implode(', ', $sentiments['Topics']) }}</td>
-                                                <td>{{ $sentiments['Event Info']['cluster'] }}</td>
+
                                                 <td align="center">
                                                     <a class="btn btn-warning"
                                                         href="{{ route('web-scrap.solution', ['reason' => $sent['reason']]) }}?json=download">
