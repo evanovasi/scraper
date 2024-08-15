@@ -58,7 +58,7 @@
                                                         <i class="fas fa-download"></i>
                                                     </a>
                                                     <button class="btn btn-primary"
-                                                        onclick="generateSolution('{{ $sent['reason'] }}')">
+                                                        onclick='generateSolution("{{ $sent['reason'] }}")'>
                                                         <i class="fas fa-eye"></i>
                                                     </button>
                                                 </td>
