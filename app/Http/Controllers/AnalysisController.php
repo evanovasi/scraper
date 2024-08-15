@@ -94,13 +94,8 @@ class AnalysisController extends Controller
 
             if (isset($responseBody['choices'][0]['message']['content'])) {
                 $sentimen = $responseBody['choices'][0]['message']['content'];
-
-                // Ganti tanda kutip tunggal dengan tanda kutip ganda jika perlu
-                $sentimen = str_replace("'", '"', $sentimen);
-
                 // Ubah JSON menjadi array
                 $json = json_decode($sentimen, true);
-
                 if (json_last_error() === JSON_ERROR_NONE) {
                     Cache::put($cacheKey, $json, 43200);
                     return view('web-scraping.analysis', [
