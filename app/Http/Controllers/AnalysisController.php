@@ -19,11 +19,13 @@ class AnalysisController extends Controller
         $this->client = new Client();
     }
 
-    public function analysis(string $id)
+    public function analysis(Request $request, string $id)
     {
-        $scraping = Scraping::findOrFail($id);
+        $lang = $request->query('lang') == 'id' ? 'Bahasa Indonesia' :  'English';
+        // $lang = $request->query('lang') == 'id' ? 'Bahasa Indonesia' : ($request->query('lang') == 'en' ? 'English' : false);
 
-        $cacheKey = 'sentiment_' . md5($scraping->title);
+        $scraping = Scraping::findOrFail($id);
+        $cacheKey = 'sentiment_' . $lang . md5($scraping->title);
 
         // Attempt to retrieve the cached response
         $cached = Cache::get($cacheKey);
@@ -36,21 +38,21 @@ class AnalysisController extends Controller
 
         // Struktur prompt yang digunakan
         $systemContent = "
-            You are an AI designed to provide comprehensive sentiment Analyst in Bahasa Indonesia in a structured JSON format.
+            You are an AI designed to provide comprehensive sentiment Analyst in $lang in a structured JSON format.
             Please generate a JSON output with the following structure:
             {
                 'Event Info': {
                     'id': '{$scraping->id}',
                     'date': '{$scraping->date}',
                     'title': 'Generated Recommendation Title from title/content',
-                    'cluster': 'Cluster: [Kemiskinan dan Ketidaksetaraan Ekonomi, Kesehatan dan Kesejahteraan, Pendidikan dan Literasi, Kekerasan dan Keamanan, Lingkungan dan Kehidupan Sosial, Lainnya]',
+                    'cluster': 'Cluster (translate in $lang): [Poverty and Economic Inequality, Health and Welfare, Education and Literacy, Violence and Security, Environment and Social Life, Others]',
                     'speaker': 'identify the figure who made the statement',
                     'location': 'Identify the location where the news occurred'
                 },
                 'Aspect Sentiments': [
                     {
                     'subject': 'The output is in the form of names of figures or governments or communities',
-                    'reason': 'Output berupa pernyataan atau respon yang disampaikan subject tersebut dalam menanggapi konteks yang terjadi',
+                    'reason': 'The output is in the form of a statement or response delivered by the subject in response to the context that occurred',
                     'sentiment': 'The output is in the form of basic sentiment analysis: Positive, Neutral, Negative',
                     'tone': 'The output in the form of sentiment analysis in the context of communication is as follows: Support, Suggestion, Criticism, Complaints or Other',
                     'object': 'The output is a classification of whether the statement is included in: Individual, Organization, Policy or Other'
@@ -61,14 +63,15 @@ class AnalysisController extends Controller
                     'output in the form of keywords as hashtags from the news in the Content variable'
                 ]
             }
-        ";
+            ";
 
         $userContent = <<<EOT
-            Objective: Create a comprehensive sentiment analyst dari {$scraping->title} yang diberikan.
-            Context: Data Context diambil variabel {$scraping->content}. Konteks sentimen analyst secara spesifik berada pada respon yang dikemukakan pada suatu topik pada content berita-berita di Indonesia.
-            Intent: Untuk menghimpun data respon atau sentimen seseorang terhadap suatu keadaan atau kebijakan pemerintah. Untuk peningkatan kualitas dan kesejahteraan kehidupan sosial masyarakat dan untuk peningkatan kinerja pemerintahan selaku pengambil kebijakan.
-            Instructions: Lakukan identifikasi aspek sentimen yang telah ditentukan. Yaitu Sentiment: [Positif, Netral, Negatif], Tone: [Dukungan, Saran, Kritik, Keluhan, Lainnya], Object: [Individu, Organisasi, Kebijakan, Lainnya], Cluster: [Kemiskinan dan Ketidaksetaraan Ekonomi, Kesehatan dan Kesejahteraan, Pendidikan dan Literasi, Kekerasan dan Keamanan, Lingkungan dan Kehidupan Sosial, Lainnya].
+            Objective: Create a comprehensive sentiment analysis of the provided {$scraping->title}.
+            Context: Data context is taken from the variable {$scraping->content}. The sentiment analysis context specifically focuses on the responses expressed on a topic within news content in Indonesia.
+            Intent: To gather data on a person's response or sentiment towards a situation or government policy. This is aimed at improving the quality and welfare of social life and enhancing the performance of the government as policy makers.
+            Instructions: Identify the predetermined sentiment aspects. These include Sentiment: [Positive, Neutral, Negative], Tone: [Support, Suggestion, Criticism, Complaint, Others], Object: [Individual, Organization, Policy, Others], Cluster: [Poverty and Economic Inequality, Health and Welfare, Education and Literacy, Violence and Security, Environment and Social Life, Others].
         EOT;
+
 
         try {
             $response = $this->client->post('https://api.openai.com/v1/chat/completions', [
@@ -119,8 +122,9 @@ class AnalysisController extends Controller
 
     public function solution(Request $request, $reason)
     {
+        $lang = $request->query('lang') == 'id' ? 'Bahasa Indonesia' :  'English';
         $reason = str_replace("-", " ", $reason);
-        $cacheKey = 'solution_' . md5($reason); // Generate a unique cache key
+        $cacheKey = 'solution_' . $lang . md5($reason); // Generate a unique cache key
 
         // Attempt to retrieve the cached response
         $cached = Cache::get($cacheKey);
@@ -140,7 +144,7 @@ class AnalysisController extends Controller
         }
 
         $systemContent = <<<EOT
-        You are an AI designed to provide comprehensive solution recommendations in Bahasa Indonesia in a structured JSON format.
+        You are an AI designed to provide comprehensive solution recommendations in $lang in a structured JSON format.
         Please generate a JSON output with the following structure:
         {
             "solution": {

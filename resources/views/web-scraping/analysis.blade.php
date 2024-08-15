@@ -112,16 +112,16 @@
     <script>
         function generateSolution(reasonString) {
             var reason = reasonString.trim().replace(/\s+/g, '-');
+            var lang = '{{ request('lang') }}';
             $('#loading-overlay').show();
             $("#modal-lg").modal('show');
 
             $.ajax({
                 type: "GET",
-                url: `/analysis/solution/${reason}`,
+                url: `/analysis/solution/${reason}?lang=${lang}`,
                 dataType: "JSON",
                 success: function(response) {
                     console.log(response);
-                    // console.log(response);
                     populateTable(response);
                 },
                 complete: function() {

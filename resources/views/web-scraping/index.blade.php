@@ -3,8 +3,6 @@
     <!-- Main content -->
     <section class="content">
         <div class="container-fluid">
-
-
             <div class="row">
                 <div class="col-12">
                     @if (session())
@@ -23,7 +21,10 @@
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title"><i class="si-alert__icon--info fa fa-info-circle"></i> Input URLs : limit
-                                to Kompas.com, detik.com, liputan6.com, antaranews.com </h3>
+                                to (ID) <strong>Kompas.com, detik.com, liputan6.com, antaranews.com</strong> and
+                                (EN)
+                                <strong> edition.cnn.com, bbc.com</strong>
+                            </h3>
                         </div>
                         <form method="POST" action="{{ route('web-scrap.store') }}">
                             @csrf
@@ -36,7 +37,7 @@
                                             <label for="url1">URL 1</label>
                                             <!-- /btn-group -->
                                             <input type="text" class="form-control" id="url1" name="urls[]"
-                                                placeholder="Enter URL 1">
+                                                value="{{ old('urls[0]') }}" placeholder="Enter URL 1">
                                         </div>
                                     </div>
                                     <button type="button" class="btn btn-info btn-sm" onclick="addUrl()">Add
@@ -78,7 +79,8 @@
 
                             <form action="" class="m-0 ml-auto">
                                 <div class="input-group">
-                                    <input class="form-control" type="text" placeholder="Search" name="search" />
+                                    <input class="form-control" type="text" placeholder="Search" name="search"
+                                        value="{{ request('search', old('search')) }}" />
                                     <div class="input-group-append">
                                         <button class="btn btn-info" type="submit"><i class="fas fa-search"></i></button>
                                     </div>
@@ -94,7 +96,7 @@
                                         <th>Date</th>
                                         <th>Title</th>
                                         <th>Content</th>
-                                        <th>Hashtags</th>
+                                        <th>Tags</th>
                                         <th>URL</th>
                                         <th>Action</th>
                                     </tr>
@@ -111,8 +113,25 @@
                                                 <td>{{ Str::limit($datascraping->url, 25, ' ...') }}</td>
                                                 <td>
                                                     <div class="btn-group">
+                                                        <button type="button" class="btn btn-primary btn-sm"
+                                                            data-toggle="dropdown">
+                                                            <i class="fa fa-search-plus"></i>
+                                                            Analysis
+                                                            <span class="sr-only">Toggle Dropdown</span>
+                                                        </button>
+                                                        <div class="dropdown-menu" role="menu">
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('web-scrap.analysis', $datascraping->id) }}?lang=id">
+                                                                ID
+                                                            </a>
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('web-scrap.analysis', $datascraping->id) }}?lang=en">
+                                                                EN </a>
+                                                        </div>
+                                                    </div>
+                                                    <div class="btn-group">
                                                         <button type="button"
-                                                            class="btn btn-success btn-sm dropdown-toggle dropdown-hover dropdown-icon"
+                                                            class="btn btn-default btn-sm dropdown-toggle dropdown-hover dropdown-icon"
                                                             data-toggle="dropdown" data-boundary="window">
                                                             <span class="sr-only">Toggle Dropdown</span>
                                                         </button>
@@ -120,9 +139,6 @@
                                                             <a class="dropdown-item"
                                                                 href="{{ route('web-scrap.show', $datascraping->id) }}"><i
                                                                     class="fa fa-info-circle"></i> Detail </a>
-                                                            <a class="dropdown-item"
-                                                                href="{{ route('web-scrap.analysis', $datascraping->id) }}"><i
-                                                                    class="fa fa-list"></i> Analysis </a>
                                                             <a class="dropdown-item"
                                                                 href="{{ route('web-scrap.json', $datascraping->id) }}"><i
                                                                     class="fa fa-download"></i> JSON </a>

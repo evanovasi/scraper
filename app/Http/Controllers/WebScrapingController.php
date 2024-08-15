@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use DateTime;
 use GuzzleHttp\Client;
 use App\Models\Scraping;
 use Illuminate\Http\Request;
@@ -95,12 +96,31 @@ class WebScrapingController extends Controller
                 $crawler = new Crawler($html);
 
                 // Ekstrak judul berita
-                $title = $crawler->filter('h1')->first()->text();
-
-                if ($primaryDomain == 'detik.com') {
+                $title =  $crawler->filter('h1')->first()->text();
+                if ($primaryDomain == 'cnn.com') {
+                    $dateString  = str_replace('Updated ', '', $crawler->filter('div.timestamp.vossi-timestamp-primary-core-light')->text());
+                    $date = DateTime::createFromFormat('g:i A T, D F d, Y', $dateString)->format('Y-m-d');
+                    $contents =  $crawler->filter('div.article__content p')->each(function ($node) {
+                        return $node->text();
+                    });
+                    $content = implode(' ', array_filter($contents));
+                    $tags = [];
+                } elseif ($primaryDomain == 'bbc.com') {
+                    $scriptContent = $crawler->filter('script[type="application/ld+json"]')->text();
+                    $data = json_decode($scriptContent, true);
+                    if (isset($data['datePublished'])) {
+                        $datePublished = new DateTime($data['datePublished']);
+                        $date = $datePublished->format('Y-m-d');
+                    }
+                    $contents =  $crawler->filter('div.sc-18fde0d6-0.dlWCEZ p')->each(function ($node) {
+                        return $node->text();
+                    });
+                    $content = implode(' ', array_filter($contents));
+                    $tags = [];
+                } elseif ($primaryDomain == 'detik.com') {
                     $date = $crawler->filterXPath('//meta[@name="dtk:publishdate"]')->attr('content');
                     $content = $crawler->filter('div.detail__body')->first()->text();
-                    $hashtags = $crawler->filter('a[dtr-act="tag"]')->each(function ($node) {
+                    $tags = $crawler->filter('a[dtr-act="tag"]')->each(function ($node) {
                         return $node->text();
                     });
                 } else if ($primaryDomain == 'kompas.com') {
@@ -109,7 +129,7 @@ class WebScrapingController extends Controller
                         return $node->text();
                     });
                     $content = implode(' ', array_filter($contents));
-                    $hashtags = $crawler->filter('li.tag__article__item')->each(function ($node) {
+                    $tags = $crawler->filter('li.tag__article__item')->each(function ($node) {
                         return $node->text();
                     });
                 } else if ($primaryDomain == 'liputan6.com') {
@@ -118,13 +138,13 @@ class WebScrapingController extends Controller
                         return $node->text();
                     });
                     $content = implode(' ', array_filter($contents));
-                    $hashtags = $crawler->filter('li.tags--snippet__item')->each(function ($node) {
+                    $tags = $crawler->filter('li.tags--snippet__item')->each(function ($node) {
                         return $node->text();
                     });
                 } else if ($primaryDomain == 'antaranews.com') {
                     $date = $crawler->filterXPath('//meta[@property="article:published_time"]')->attr('content');
                     $content = $crawler->filter('div.wrap__article-detail-content')->first()->text();
-                    $hashtags = $crawler->filter('div.blog-tags ul.list-inline li.list-inline-item')->each(function ($node) {
+                    $tags = $crawler->filter('div.blog-tags ul.list-inline li.list-inline-item')->each(function ($node) {
                         return $node->text();
                     });
                 } else {
@@ -141,7 +161,7 @@ class WebScrapingController extends Controller
                 $scraping->title = $title;
                 $scraping->content = $content;
                 $scraping->url = $url;
-                $scraping->hashtags = implode(', ', array_filter($hashtags));
+                $scraping->hashtags = implode(', ', array_filter($tags));
                 $scraping->save();
 
                 $results = [
