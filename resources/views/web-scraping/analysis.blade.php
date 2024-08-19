@@ -25,6 +25,10 @@
                                         <td><strong>Cluster</strong></td>
                                         <td>{{ $sentiments['Event Info']['cluster'] }}</td>
                                     </tr>
+                                    <tr>
+                                        <td><strong>Location</strong></td>
+                                        <td>{{ $sentiments['Event Info']['location'] }}</td>
+                                    </tr>
                                 </tbody>
                             </table>
 
@@ -113,12 +117,13 @@
         function generateSolution(reasonString) {
             var reason = reasonString.trim().replace(/\s+/g, '-');
             var lang = '{{ request('lang') }}';
+            var loc = '{{ $sentiments['Event Info']['location'] }}';
             $('#loading-overlay').show();
             $("#modal-lg").modal('show');
 
             $.ajax({
                 type: "GET",
-                url: `/analysis/solution/${reason}?lang=${lang}`,
+                url: `/analysis/solution/${reason}?lang=${lang}&loc=${loc}`,
                 dataType: "JSON",
                 success: function(response) {
                     console.log(response);

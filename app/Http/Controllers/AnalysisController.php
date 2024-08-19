@@ -38,16 +38,16 @@ class AnalysisController extends Controller
 
         // Struktur prompt yang digunakan
         $systemContent = "
-            You are an AI designed to provide comprehensive sentiment Analyst in $lang in a structured JSON format.
+            You are an AI designed to provide comprehensive sentiment Analyst translated in $lang and structured JSON formats.
             Please generate a JSON output with the following structure:
             {
                 'Event Info': {
                     'id': '{$scraping->id}',
                     'date': '{$scraping->date}',
                     'title': 'Generated Recommendation Title from title/content',
-                    'cluster': 'Cluster (translate in $lang): [Poverty and Economic Inequality, Health and Welfare, Education and Literacy, Violence and Security, Environment and Social Life, Others]',
+                    'cluster': 'Cluster : [Poverty and Economic Inequality, Health and Welfare, Education and Literacy, Violence and Security, Environment and Social Life, Others]',
                     'speaker': 'identify the figure who made the statement',
-                    'location': 'Identify the location where the news occurred'
+                    'location': 'Identify the country where the news occurred.'
                 },
                 'Aspect Sentiments': [
                     {
@@ -113,13 +113,13 @@ class AnalysisController extends Controller
         }
     }
 
-
-
     public function solution(Request $request, $reason)
     {
         $lang = $request->query('lang') == 'id' ? 'Bahasa Indonesia' :  'English';
+        $loc = $request->query('loc');
+
         $reason = str_replace("-", " ", $reason);
-        $cacheKey = 'solution_' . $lang . md5($reason); // Generate a unique cache key
+        $cacheKey = 'solution_' . $lang . '_' . $loc . '_' . md5($reason);
 
         // Attempt to retrieve the cached response
         $cached = Cache::get($cacheKey);
@@ -139,7 +139,7 @@ class AnalysisController extends Controller
         }
 
         $systemContent = <<<EOT
-        You are an AI designed to provide comprehensive solution recommendations in $lang in a structured JSON format.
+        You are an AI designed to provide comprehensive solution recommendations translated in $lang and structured JSON formats.
         Please generate a JSON output with the following structure:
         {
             "solution": {
@@ -148,7 +148,7 @@ class AnalysisController extends Controller
                     {
                         "title": "Generated Recommendation Title",
                         "description": "Detailed explanation of the recommendation",
-                        "legal_reference": "Several comprehensive and Relevant current legal references",
+                        "legal_reference": "Generate Several current legal references that are comprehensive and contextually relevant in $loc",
                         "implementation_strategy": "strategy implementation recommendations with detailed steps in concrete points of implementation from start to finish, mention the parties or stakeholders who are interrelated and need to work together in order to succeed. Provide real implementation examples for each of the concrete points."
                     }
                 ],
@@ -161,7 +161,7 @@ class AnalysisController extends Controller
         Objective: Create a comprehensive solution and recommendation for the social issue: $reason.
         Context: The solution recommendation should specifically address the area of Poverty and Economic Inequality, Health and Well-being, Education and Literacy, Violence and Security, or Environment and Social Life in accordance with the prevailing laws in Indonesia.
         Intent: Improve the quality and welfare of social life and enhance the performance of the government as a policymaker.
-        Instructions: Provide detailed and comprehensive recommendations with reference to relevant regulations in Indonesia. Provide several references to related and current laws and regulations.
+        Instructions: Provide detailed and comprehensive recommendations with reference to relevant regulations in $loc. Provide several references to related and current laws and regulations.
         Presentation: The solution should be feasible for implementation by society at large and specifically by the government.
     EOT;
 
@@ -183,28 +183,31 @@ class AnalysisController extends Controller
             ]);
 
             $responseBody = json_decode($response->getBody()->getContents(), true);
-            $solution = $responseBody['choices'][0]['message']['content'];
-            $solution = trim($solution);
 
-            $jsonObject = json_decode($solution, true);
+            if (isset($responseBody['choices'][0]['message']['content'])) {
+                $solution = trim($responseBody['choices'][0]['message']['content']);
+                $jsonObject = json_decode($solution, true);
 
-            if (json_last_error() === JSON_ERROR_NONE) {
-                // Store the result in the cache for 12 hours (43200 seconds)
-                Cache::put($cacheKey, $jsonObject, 43200);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    // Store the result in the cache for 12 hours (43200 seconds)
+                    Cache::put($cacheKey, $jsonObject, 43200);
 
-                if ($request->query('json') === 'download') {
-                    // Prepare the JSON file for download
-                    $filePath = 'exports/solution.json';
-                    $json = json_encode($jsonObject, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-                    Storage::put($filePath, $json);
+                    if ($request->query('json') === 'download') {
+                        // Prepare the JSON file for download
+                        $filePath = 'exports/solution.json';
+                        $json = json_encode($jsonObject, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                        Storage::put($filePath, $json);
 
-                    return response()->download(storage_path('app/' . $filePath), 'solution.json')->deleteFileAfterSend(true);
+                        return response()->download(storage_path('app/' . $filePath), 'solution.json')->deleteFileAfterSend(true);
+                    } else {
+                        // Return the data as a JSON response
+                        return response()->json($jsonObject);
+                    }
                 } else {
-                    // Return the data as a JSON response
-                    return response()->json($jsonObject);
+                    throw new \Exception("Error decoding JSON: " . json_last_error_msg());
                 }
             } else {
-                throw new \Exception("Error decoding JSON: " . json_last_error_msg());
+                throw new \Exception("Invalid response structure from OpenAI API.");
             }
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
