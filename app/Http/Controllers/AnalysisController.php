@@ -148,7 +148,7 @@ class AnalysisController extends Controller
                     {
                         "title": "Generated Recommendation Title",
                         "description": "Detailed explanation of the recommendation",
-                        "legal_reference": "Generate Several current legal references that are comprehensive and contextually relevant in $loc",
+                        "legal_reference": "Some comprehensive and contextually relevant up-to-date legal references in $loc",
                         "implementation_strategy": "strategy implementation recommendations with detailed steps in concrete points of implementation from start to finish, mention the parties or stakeholders who are interrelated and need to work together in order to succeed. Provide real implementation examples for each of the concrete points."
                     }
                 ],
