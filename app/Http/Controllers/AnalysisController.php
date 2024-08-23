@@ -96,15 +96,15 @@ class AnalysisController extends Controller
                 $sentimen = $responseBody['choices'][0]['message']['content'];
                 // Ubah JSON menjadi array
                 $json = json_decode($sentimen, true);
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    Cache::put($cacheKey, $json, 43200);
-                    return view('web-scraping.analysis', [
-                        'title' => 'Analysis',
-                        'sentiments' => $json
-                    ]);
-                } else {
-                    throw new \Exception("Error decoding JSON: " . json_last_error_msg());
-                }
+                // if (json_last_error() === JSON_ERROR_NONE) {
+                Cache::put($cacheKey, $json, 43200);
+                return view('web-scraping.analysis', [
+                    'title' => 'Analysis',
+                    'sentiments' => $json
+                ]);
+                // } else {
+                //     throw new \Exception("Error decoding JSON: " . json_last_error_msg());
+                // }
             } else {
                 throw new \Exception("Invalid response structure from OpenAI API.");
             }
