@@ -17,9 +17,7 @@ Route::controller(WebScrapingController::class)->group(function () {
     Route::get('/web-scrap/json/{id?}',  'toJSON')->name('web-scrap.json');
 });
 Route::controller(AnalysisController::class)->group(function () {
-    Route::get('/analysis/{id}',  'analysis')->name('web-scrap.analysis');
-    Route::post('/analysis/sentiment',  'sentiment')->name('web-scrap.sentiment');
-    Route::get('/analysis/solution/{reason}',  'solution')->name('web-scrap.solution');
+    Route::get('/analysis/{id}',  'index')->name('analysis.index');
 });
 
 // Route::controller(SocialMediaScrapingController::class)->group(function () {

@@ -21,7 +21,7 @@
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title"><i class="si-alert__icon--info fa fa-info-circle"></i> Input URLs : limit
-                                to (ID) <strong>Kompas.com, detik.com, liputan6.com, antaranews.com</strong> and
+                                to (ID) <strong>kompas.com, detik.com, liputan6.com, antaranews.com</strong> and
                                 (EN)
                                 <strong> edition.cnn.com, bbc.com</strong>
                             </h3>
@@ -121,11 +121,11 @@
                                                         </button>
                                                         <div class="dropdown-menu" role="menu">
                                                             <a class="dropdown-item"
-                                                                href="{{ route('web-scrap.analysis', $datascraping->id) }}?lang=id">
+                                                                href="{{ route('analysis.index', $datascraping->id) }}?lang=id">
                                                                 ID
                                                             </a>
                                                             <a class="dropdown-item"
-                                                                href="{{ route('web-scrap.analysis', $datascraping->id) }}?lang=en">
+                                                                href="{{ route('analysis.index', $datascraping->id) }}?lang=en">
                                                                 EN </a>
                                                         </div>
                                                     </div>

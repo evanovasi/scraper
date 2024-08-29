@@ -30,7 +30,7 @@
                                         <td>{{ $datascraping->content }}</td>
                                     </tr>
                                     <tr>
-                                        <td><strong>Hashtags</strong></td>
+                                        <td><strong>Tags</strong></td>
                                         <td>{{ $datascraping->hashtags }}</td>
                                     </tr>
                                     <tr>

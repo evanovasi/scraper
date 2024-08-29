@@ -57,12 +57,12 @@
                                                 <td>{{ $sent['object'] }}</td>
 
                                                 <td align="center">
-                                                    <a class="btn btn-warning"
-                                                        href="{{ route('web-scrap.solution', ['reason' => $sent['reason']]) }}?json=download">
+                                                    {{-- <a class="btn btn-warning"
+                                                        href="{{ route('analysis.solution', ['reason' => $sent['reason']]) }}?json=download">
                                                         <i class="fas fa-download"></i>
-                                                    </a>
-                                                    <button class="btn btn-primary"
-                                                        onclick='generateSolution("{{ $sent['reason'] }}")'>
+                                                    </a> --}}
+                                                    <button type="button" class="btn btn-primary" data-toggle="modal"
+                                                        data-target="#solution">
                                                         <i class="fas fa-eye"></i>
                                                     </button>
                                                 </td>
@@ -87,7 +87,7 @@
     </section>
     <!-- /.content -->
 
-    <div class="modal fade" id="modal-lg">
+    <div class="modal fade" id="solution">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -101,8 +101,18 @@
                         role="document">
                         <span class="fa fa-spinner fa-spin fa-3x w-100"></span>
                     </div>
-                    <div id="solutionTable">
-                    </div>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <td><strong>Issue</strong></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Presentation</strong></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 <div class="modal-footer justify-content-between">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -114,7 +124,7 @@
         </div>
     </div>
     <script>
-        function generateSolution(reasonString) {
+        function solution(reasonString) {
             var reason = reasonString.trim().replace(/\s+/g, '-');
             var lang = '{{ request('lang') }}';
             var loc = '{{ $sentiments['Event Info']['location'] }}';

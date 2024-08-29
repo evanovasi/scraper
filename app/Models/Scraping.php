@@ -10,8 +10,6 @@ class Scraping extends Model
     use HasFactory;
     protected $hidden = ['type', 'created_at', 'updated_at'];
 
-
-
     public function scopeFilter($query,  $request)
     {
         // search
@@ -27,5 +25,10 @@ class Scraping extends Model
         $query->when($request->query('tags') ?? false, function ($query, $tagsKey) {
             return $query->where('hashtags', 'LIKE', "%{$tagsKey}%");
         });
+    }
+
+    public function analyses()
+    {
+        return $this->hasMany(Analysis::class);
     }
 }
