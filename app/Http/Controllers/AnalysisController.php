@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use GuzzleHttp\Client;
 use App\Models\Analysis;
 use App\Models\Scraping;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AnalysisController extends Controller
 {
@@ -21,44 +23,59 @@ class AnalysisController extends Controller
 
     public function index(Request $request, string $id)
     {
-        $lang = $request->query('lang') == 'id' ? 'Bahasa Indonesia' : 'English';
         $scraping = Scraping::findOrFail($id);
+        if ($scraping) {
+            $lang = $request->query('lang') == 'id' ? 'Bahasa Indonesia' : 'English';
+            $scraping = Scraping::findOrFail($id);
 
-        // Cek apakah analisis sudah ada
-        $existingAnalysis = Analysis::where('scraping_id', $scraping->id)
-            ->where('lang', $lang)
-            ->first();
+            // Cek apakah analisis sudah ada atau buat baru jika tidak ada
+            $analysis = Analysis::firstOrNew(['scraping_id' => $scraping->id, 'lang' => $lang]);
 
-        if ($existingAnalysis->sentiment) {
-            $sentiment = json_decode($existingAnalysis->sentiment, true);
-        } else {
-            // Panggil fungsi _sentiment untuk mendapatkan data sentimen
-            $sentiment = $this->_sentiment($lang, $id);
-            if (empty($sentiment)) {
-                return response()->json(['error' => 'No sentiment data found.'], 404);
+            // Mendapatkan data sentiment
+            if (!empty($analysis->sentiment)) {
+                // Jika ada, ambil data sentiment dari DB
+                $sentiment = json_decode($analysis->sentiment, true);
+            } else {
+                // Jika tidak ada, panggil fungsi _sentiment untuk mengenerate data sentiment
+                $sentiment = $this->_sentiment($lang, $id);
+                if (empty($sentiment)) {
+                    return response()->json(['error' => 'No sentiment data found.'], 404);
+                }
+                $analysis->sentiment = json_encode($sentiment);
             }
 
-            $analysis = new Analysis();
-            $analysis->scraping_id = $scraping->id;
-            $analysis->sentiment = json_encode($sentiment); // Encode data menjadi JSON untuk disimpan
-            $analysis->lang = $lang;
+            // Mendapatkan data solution
+            if (!empty($analysis->solution)) {
+                // Jika ada, ambil data solution dari DB
+                $solution = json_decode($analysis->solution, true);
+            } else {
+                $solutions = [];
+                foreach ($sentiment['Aspect Sentiments'] as $item) {
+                    $solution = $this->_solution($lang, $sentiment['Event Info']['location'], $item);
+                    if (isset($solution['solution'])) {
+                        $solutions[] = $solution['solution'];
+                    }
+                }
+
+                if (empty($solutions)) {
+                    return response()->json(['error' => 'No solution data found.'], 404);
+                }
+                $analysis->solution = json_encode(['solution' => $solutions]);
+            }
+
+            // Simpan ke database setelah memastikan kedua data ada
             $analysis->save();
-        }
 
-        if ($existingAnalysis->solution) {
-            $solution = json_decode($existingAnalysis->solution, true);
+            return view('web-scraping.analysis', [
+                'title' => 'Analysis',
+                'analyses' => [
+                    'sentiment' => json_decode($analysis->sentiment, true),
+                    'solution' => json_decode($analysis->solution, true),
+                ],
+            ]);
         } else {
-            $solution = $this->_solution($lang, $id);
-            if (empty($solution)) {
-                return response()->json(['error' => 'No solution data found.'], 404);
-            }
+            abort(404, 'Data tidak ditemukan.');
         }
-
-        return view('web-scraping.analysis', [
-            'title' => 'Analysis',
-            'sentiments' => $sentiment,
-            'solutions' => $solution
-        ]);
     }
 
     private function _sentiment($lang,  $id)
@@ -79,6 +96,7 @@ class AnalysisController extends Controller
             },
             'Aspect Sentiments': [
                 {
+                'id': '1', // Use a variable to increment this value as needed
                 'subject': 'The output is in the form of names of figures or governments or communities',
                 'reason': 'The output is in the form of a statement or response delivered by the subject in response to the context that occurred',
                 'sentiment': 'The output is in the form of basic sentiment analysis: Positive, Neutral, Negative',
@@ -137,21 +155,20 @@ class AnalysisController extends Controller
         }
     }
 
-    private function _solution(Request $request, $reason)
+    private function _solution($lang, $loc, $sentimen)
     {
-        $lang = $request->query('lang') == 'id' ? 'Bahasa Indonesia' :  'English';
-        $loc = $request->query('loc');
-
-        $reason = str_replace("-", " ", $reason);
+        $sentimen_id = $sentimen['id'];
+        $reason = $sentimen['reason'];
 
         $systemContent = <<<EOT
-        You are an AI designed to provide comprehensive solution recommendations translated in $lang and structured JSON formats.
+        You are an AI designed to provide comprehensive solution recommendations translated in $lang and structured in a valid JSON format only.
         Please generate a JSON output with the following structure:
         {
             "solution": {
                 "issue": "This should match the issue provided in the input",
                 "recommendations": [
                     {
+                        "id": $sentimen_id
                         "title": "Generated Recommendation Title",
                         "description": "Detailed explanation of the recommendation",
                         "legal_reference": "Some comprehensive and contextually relevant up-to-date legal references in $loc",
@@ -161,7 +178,7 @@ class AnalysisController extends Controller
                 "presentation": "How this solution can be implemented broadly by society and government"
             }
         }
-    EOT;
+        EOT;
 
         $userContent = <<<EOT
         Objective: Create a comprehensive solution and recommendation for the social issue: $reason.
@@ -169,7 +186,7 @@ class AnalysisController extends Controller
         Intent: Improve the quality and welfare of social life and enhance the performance of the government as a policymaker.
         Instructions: Provide detailed and comprehensive recommendations with reference to relevant regulations in $loc. Provide several references to related and current laws and regulations.
         Presentation: The solution should be feasible for implementation by society at large and specifically by the government.
-    EOT;
+        EOT;
 
         try {
             $response = $this->client->post('https://api.openai.com/v1/chat/completions', [
@@ -191,21 +208,10 @@ class AnalysisController extends Controller
             $responseBody = json_decode($response->getBody()->getContents(), true);
 
             if (isset($responseBody['choices'][0]['message']['content'])) {
-                $solution = trim($responseBody['choices'][0]['message']['content']);
-                $jsonObject = json_decode($solution, true);
-
+                $solution = $responseBody['choices'][0]['message']['content'];
+                $json = json_decode($solution, true);
                 if (json_last_error() === JSON_ERROR_NONE) {
-                    if ($request->query('json') === 'download') {
-                        // Prepare the JSON file for download
-                        $filePath = 'exports/solution.json';
-                        $json = json_encode($jsonObject, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-                        Storage::put($filePath, $json);
-
-                        return response()->download(storage_path('app/' . $filePath), 'solution.json')->deleteFileAfterSend(true);
-                    } else {
-                        // Return the data as a JSON response
-                        return response()->json($jsonObject);
-                    }
+                    return $json;
                 } else {
                     throw new \Exception("Error decoding JSON: " . json_last_error_msg());
                 }

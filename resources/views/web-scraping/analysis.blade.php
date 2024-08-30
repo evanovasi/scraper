@@ -15,19 +15,20 @@
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body table-responsive p-0">
+
                             <table class="table table-bordered">
                                 <tbody>
                                     <tr>
                                         <td><strong>Topics</strong></td>
-                                        <td>{{ implode(', ', $sentiments['Topics']) }}</td>
+                                        <td>{{ implode(', ', $analyses['sentiment']['Topics']) }}</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Cluster</strong></td>
-                                        <td>{{ $sentiments['Event Info']['cluster'] }}</td>
+                                        <td>{{ $analyses['sentiment']['Event Info']['cluster'] }}</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Location</strong></td>
-                                        <td>{{ $sentiments['Event Info']['location'] }}</td>
+                                        <td>{{ $analyses['sentiment']['Event Info']['location'] }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -45,9 +46,9 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @if ($sentiments)
+                                    @if ($analyses['sentiment'])
                                         {{-- @foreach ($sentiments as $sentiment) --}}
-                                        @foreach ($sentiments['Aspect Sentiments'] as $sent)
+                                        @foreach ($analyses['sentiment']['Aspect Sentiments'] as $key => $sent)
                                             <tr>
                                                 <td scope="row">{{ $loop->iteration }}</td>
                                                 <td>{{ $sent['subject'] }}</td>
@@ -55,14 +56,14 @@
                                                 <td>{{ $sent['sentiment'] }}</td>
                                                 <td>{{ $sent['tone'] }}</td>
                                                 <td>{{ $sent['object'] }}</td>
-
-                                                <td align="center">
-                                                    {{-- <a class="btn btn-warning"
-                                                        href="{{ route('analysis.solution', ['reason' => $sent['reason']]) }}?json=download">
-                                                        <i class="fas fa-download"></i>
-                                                    </a> --}}
-                                                    <button type="button" class="btn btn-primary" data-toggle="modal"
-                                                        data-target="#solution">
+                                                {{-- <td align="center">
+                                                    <a class="btn btn-warning"
+                                                    href="{{ route('analysis.solution', ['reason' => $sent['reason']]) }}?json=download">
+                                                    <i class="fas fa-download"></i>
+                                                </a> --}}
+                                                <td align="text-center">
+                                                    <button type="button" class="btn btn-primary"
+                                                        onclick="solution({{ $key }})">
                                                         <i class="fas fa-eye"></i>
                                                     </button>
                                                 </td>
@@ -86,117 +87,4 @@
         </div>
     </section>
     <!-- /.content -->
-
-    <div class="modal fade" id="solution">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Recommended Solution</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="loading-overlay" style="display: none;" class="modal-dialog modal-dialog-centered text-center"
-                        role="document">
-                        <span class="fa fa-spinner fa-spin fa-3x w-100"></span>
-                    </div>
-                    <table class="table table-bordered">
-                        <tbody>
-                            <tr>
-                                <td><strong>Issue</strong></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Presentation</strong></td>
-                                <td></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="modal-footer justify-content-between">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    {{-- <button id="downloadJson" class="btn btn-warning">
-                        <i class="fa fa-download"></i> Download JSON
-                    </button> --}}
-                </div>
-            </div>
-        </div>
-    </div>
-    <script>
-        function solution(reasonString) {
-            var reason = reasonString.trim().replace(/\s+/g, '-');
-            var lang = '{{ request('lang') }}';
-            var loc = '{{ $sentiments['Event Info']['location'] }}';
-            $('#loading-overlay').show();
-            $("#modal-lg").modal('show');
-
-            $.ajax({
-                type: "GET",
-                url: `/analysis/solution/${reason}?lang=${lang}&loc=${loc}`,
-                dataType: "JSON",
-                success: function(response) {
-                    console.log(response);
-                    populateTable(response);
-                },
-                complete: function() {
-                    // Hide the loading overlay
-                    $('#loading-overlay').hide();
-                },
-                error: function(xhr, status, error) {
-                    $('#loading-overlay').hide();
-                    console.error('Error:', error);
-                }
-            });
-        }
-
-        function populateTable(data) {
-            const solutionTable = $('#solutionTable');
-            // Add the issue row
-            solutionTable.append(`
-                <table class="table table-bordered">
-                    <tbody id="issue">
-                    <tr>
-                        <td><strong>Issue</strong></td>
-                        <td>${data.solution.issue}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Presentation</strong></td>
-                        <td>${data.solution.presentation}</td>
-                    </tr>
-                    </tbody>
-                </table>
-                `);
-            solutionTable.append(`
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Description</th>
-                            <th>Legal Reference</th>
-                            <th>Implementation Strategy</th>
-                        </tr>
-                    </thead>
-                       <tbody id='tableBody'>
-                        </tbody>
-                </table>
-               `);
-            // Loop through recommendations and add rows
-            $.each(data.solution.recommendations, function(index, recommendation) {
-                $('#tableBody').append(`
-                   <tr>
-                        <td>${recommendation.title}</td>
-                        <td>${recommendation.description}</td>
-                        <td>${recommendation.legal_reference}</td>
-                        <td>${recommendation.implementation_strategy}</td>
-                     </tr>
-                    `);
-            });
-        }
-
-        // Clear modal content when modal is hidden
-        $('#modal-lg').on('hidden.bs.modal', function() {
-            $('#solutionTable').empty();
-        });
-    </script>
 @endsection
