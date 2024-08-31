@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('analyses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('scraping_id')->references('id')->on('scrapings')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->text('sentiment')->nullable();
-            $table->text('solution')->nullable();
-            $table->string('lang')->nullable();
+            $table->text('key');
+            $table->text('value');
+            // $table->foreignId('scraping_id')->references('id')->on('scrapings')->cascadeOnDelete()->cascadeOnUpdate();
+            // $table->text('sentiment')->nullable();
+            // $table->text('solution')->nullable();
+            // $table->string('lang')->nullable();
             $table->timestamps();
         });
     }

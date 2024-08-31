@@ -5,10 +5,8 @@ namespace App\Http\Controllers;
 use GuzzleHttp\Client;
 use App\Models\Analysis;
 use App\Models\Scraping;
-use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Hash;
 
 class AnalysisController extends Controller
 {
@@ -23,60 +21,72 @@ class AnalysisController extends Controller
 
     public function index(Request $request, string $id)
     {
+        // Mencari record berdasarkan ID
         $scraping = Scraping::findOrFail($id);
-        if ($scraping) {
-            $lang = $request->query('lang') == 'id' ? 'Bahasa Indonesia' : 'English';
-            $scraping = Scraping::findOrFail($id);
 
-            // Cek apakah analisis sudah ada atau buat baru jika tidak ada
-            $analysis = Analysis::firstOrNew(['scraping_id' => $scraping->id, 'lang' => $lang]);
+        // Mendapatkan bahasa dari query parameter, default ke 'English'
+        $lang = $request->query('lang') == 'id' ? 'Bahasa Indonesia' : 'English';
 
-            // Mendapatkan data sentiment
-            if (!empty($analysis->sentiment)) {
-                // Jika ada, ambil data sentiment dari DB
-                $sentiment = json_decode($analysis->sentiment, true);
-            } else {
-                // Jika tidak ada, panggil fungsi _sentiment untuk mengenerate data sentiment
-                $sentiment = $this->_sentiment($lang, $id);
-                if (empty($sentiment)) {
-                    return response()->json(['error' => 'No sentiment data found.'], 404);
-                }
-                $analysis->sentiment = json_encode($sentiment);
+        // Membuat key sentiment
+        $sentimentKey = 'sentiment_' . $lang . md5($scraping->title);
+
+        // Cek apakah analisis sudah ada atau buat baru jika tidak ada
+        $analysis = Analysis::firstOrNew(['key' => $sentimentKey]);
+
+        // Jika tidak ada, panggil fungsi _sentiment untuk mengenerate data sentiment
+        if (empty($analysis->value)) {
+            $sentiment = $this->_sentiment($lang, $id);
+            if (empty($sentiment)) {
+                return response()->json(['error' => 'No sentiment data found.'], 404);
             }
-
-            // Mendapatkan data solution
-            if (!empty($analysis->solution)) {
-                // Jika ada, ambil data solution dari DB
-                $solution = json_decode($analysis->solution, true);
-            } else {
-                $solutions = [];
-                foreach ($sentiment['Aspect Sentiments'] as $item) {
-                    $solution = $this->_solution($lang, $sentiment['Event Info']['location'], $item);
-                    if (isset($solution['solution'])) {
-                        $solutions[] = $solution['solution'];
-                    }
-                }
-
-                if (empty($solutions)) {
-                    return response()->json(['error' => 'No solution data found.'], 404);
-                }
-                $analysis->solution = json_encode(['solution' => $solutions]);
-            }
-
-            // Simpan ke database setelah memastikan kedua data ada
-            $analysis->save();
-
-            return view('web-scraping.analysis', [
-                'title' => 'Analysis',
-                'analyses' => [
-                    'sentiment' => json_decode($analysis->sentiment, true),
-                    'solution' => json_decode($analysis->solution, true),
-                ],
-            ]);
-        } else {
-            abort(404, 'Data tidak ditemukan.');
+            $analysis->value = json_encode($sentiment);
         }
+
+        // Simpan ke database setelah memastikan data sentiment ada
+        $analysis->key = $sentimentKey;
+        $analysis->save();
+
+        // Mendapatkan data sentiment dari database
+        $sentiment = json_decode($analysis->value, true);
+
+
+        // Tampilkan data
+        return view('web-scraping.analysis', [
+            'title' => 'Analysis',
+            'sentiment' => $sentiment,
+        ]);
     }
+
+
+    public function getSolution(Request $request, $reason)
+    {
+        $lang = $request->query('lang') == 'id' ? 'Bahasa Indonesia' :  'English';
+        $loc = $request->query('loc');
+
+        $reason = str_replace("-", " ", $reason);
+        $solutionKey = 'solution_' . $lang . '_' . $loc . '_' . md5($reason);
+
+        $analysis = Analysis::firstOrNew(['key' => $solutionKey]);
+
+        // Jika tidak ada, panggil fungsi _solution untuk mengenerate data solution
+        if (empty($analysis->value)) {
+            $solution = $this->_solution($reason, $lang, $loc);
+            if (empty($solution)) {
+                return response()->json(['error' => 'No solution data found.'], 404);
+            }
+            $analysis->value = json_encode($solution);
+        }
+
+        // Simpan ke database setelah memastikan data solution ada
+        $analysis->key = $solutionKey;
+        $analysis->save();
+
+        $solution = json_decode($analysis->value, true);
+
+        return response()->json($solution);
+    }
+
+
 
     private function _sentiment($lang,  $id)
     {
@@ -96,7 +106,6 @@ class AnalysisController extends Controller
             },
             'Aspect Sentiments': [
                 {
-                'id': '1', // Use a variable to increment this value as needed
                 'subject': 'The output is in the form of names of figures or governments or communities',
                 'reason': 'The output is in the form of a statement or response delivered by the subject in response to the context that occurred',
                 'sentiment': 'The output is in the form of basic sentiment analysis: Positive, Neutral, Negative',
@@ -155,11 +164,8 @@ class AnalysisController extends Controller
         }
     }
 
-    private function _solution($lang, $loc, $sentimen)
+    private function _solution($reason, $lang, $loc)
     {
-        $sentimen_id = $sentimen['id'];
-        $reason = $sentimen['reason'];
-
         $systemContent = <<<EOT
         You are an AI designed to provide comprehensive solution recommendations translated in $lang and structured in a valid JSON format only.
         Please generate a JSON output with the following structure:
@@ -168,7 +174,6 @@ class AnalysisController extends Controller
                 "issue": "This should match the issue provided in the input",
                 "recommendations": [
                     {
-                        "id": $sentimen_id
                         "title": "Generated Recommendation Title",
                         "description": "Detailed explanation of the recommendation",
                         "legal_reference": "Some comprehensive and contextually relevant up-to-date legal references in $loc",

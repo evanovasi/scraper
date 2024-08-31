@@ -18,14 +18,10 @@ Route::controller(WebScrapingController::class)->group(function () {
 });
 Route::controller(AnalysisController::class)->group(function () {
     Route::get('/analysis/{id}',  'index')->name('analysis.index');
+    Route::get('/analysis/solution/{reason}', 'getSolution')->name('analysis.solution');
 });
 
 // Route::controller(SocialMediaScrapingController::class)->group(function () {
 Route::get('/socmed-scrap', function () {
     abort(404);
 });
-    // Route::get('/socmed-scrap', 'index')->name('socmed-scrap.index');
-    // Route::post('/socmed-scrap',  'store')->name('socmed-scrap.store');
-    // Route::delete('/socmed-scrap/{id}',  'destroy')->name('socmed-scrap.destroy');
-    // Route::get('/socmed-scrap/{id?}',  'toJSON')->name('socmed-scrap.json');
-// });
